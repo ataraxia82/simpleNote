@@ -44,7 +44,8 @@
 			</ul>
 		  </div>
 		  <div>
-		  	<span class="mui-icon iconfont icon-add mc-bottom"></span>
+		  	<span id="add" class="mui-icon iconfont icon-add mc-bottom"></span>
+<!--		  	<span id="addImg" class="mui-icon iconfont icon-add mc-bottom"></span>-->
 		  </div>
 	</div>
 </body>
@@ -66,7 +67,8 @@
 			//初始化日历
 			var MC = mui("#container").MCalendar(mui.DateUtil.getToday());
 			
-			var add = document.querySelector('.mc-bottom');
+//			var add = document.querySelector('.mc-bottom');
+			var add = document.querySelector('#add');
 			
 			//添加事件
 			add.addEventListener("tap",function(){
@@ -91,6 +93,16 @@
 			  var d = new Date(ntime * 1000);
 			  MC.changeDate(d);
 			});
+			
+//			var addImg = document.querySelector('#addImg');
+//			
+//			//添加事件
+//			addImg.addEventListener("tap",function(){
+//				mui.openWindow({
+//					url:'addImg.html',
+//				    id:'addImg.html'
+//				    });
+//	       });
 		};
 		
 		mui.plusReady(calender)
