@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+ 
+        <!-- mui -->
+        <link type="text/css" rel="stylesheet" href="css/mui.min.css"/>
+        <link rel="stylesheet" type="text/css" href="css/mui.picker.min.css" />
+        <script type="text/javascript" src="js/mui.js"></script>
+	    <script type="text/javascript" charset="utf-8">
+			mui.init({
+//			    beforeback: function() {
+//			　　　　 //获得父页面的webview
+//			        var index = plus.webview.currentWebview().opener();
+//			　　　　 //触发父页面的自定义事件(refresh),从而进行刷新
+//			        mui.fire(index, 'refresh');
+//			        //返回true,继续页面关闭逻辑
+//			        return true;
+//			    }
+			});
+	    </script>
+    </head>
+ 
+    <body>
+    	<header class="mui-bar mui-bar-nav">
+    	    <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+    	    <h1 class="mui-title">新增</h1>
+    	</header>
+    	<div class="mui-content">
+	        <div class="mui-content-padded">
+	            <div class="mui-input-row">
+	                <input type="text" data-options='{}' class="mui-input-clear" placeholder="请选择时间" id="notetime">
+	                </input>
+	            </div>
+	            <div class="mui-input-row">
+	                <textarea rows="14" placeholder="请输入内容" id="noteinfo"></textarea>
+	            </div>
+	            <div class="mui-button-row">
+	                <button class="mui-btn mui-btn-block mui-btn-primary addItemBtn">添加</button>
+	            </div>
+	        </div>
+    	</div>
+    </body>
+    
+    <script src="js/websql.js"></script>
+	<script src="js/mui.picker.min.js"></script>
+	<script>
+		var h = function(){
+			var t = document.querySelector('#notetime');
+			var i = document.querySelector('#noteinfo');
+			
+			var dt = document.querySelector('.mui-input-clear');
+			dt.addEventListener('tap', function() {
+				var _self = this;
+				if(_self.picker) {
+					_self.picker.show(function (rs) {
+						result.innerText = '选择结果: ' + rs.text;
+						_self.picker.dispose();
+						_self.picker = null;
+					});
+				} else {
+					var optionsJson = this.getAttribute('data-options') || '{}';
+					var options = JSON.parse(optionsJson);
+					var id = this.getAttribute('id');
+					/*
+					 * 首次显示时实例化组件
+					 * 示例为了简洁，将 options 放在了按钮的 dom 上
+					 * 也可以直接通过代码声明 optinos 用于实例化 DtPicker
+					 */
+					_self.picker = new mui.DtPicker(options);
+					_self.picker.show(function(rs) {
+						/*
+						 * rs.value 拼合后的 value
+						 * rs.text 拼合后的 text
+						 * rs.y 年，可以通过 rs.y.vaue 和 rs.y.text 获取值和文本
+						 * rs.m 月，用法同年
+						 * rs.d 日，用法同年
+						 * rs.h 时，用法同年
+						 * rs.i 分（minutes 的第二个字母），用法同年
+						 */
+						var today = new Date();
+						today.setHours(0, 0, 0, 0);
+						var tt = Date.parse(today)/1000;
+						var d = new Date(rs.text);
+						d.setHours(0, 0, 0, 0);
+						var dd = Date.parse(d)/1000;
+						if(dd < tt){  
+							mui.toast("不能选择之前日期！");  
+							_self.picker.dispose();
+							_self.picker = null;
+							return;
+						}  
+						
+						t.value = rs.text;
+						/* 
+						 * 返回 false 可以阻止选择框的关闭
+						 * return false;
+						 */
+						/*
+						 * 释放组件资源，释放后将将不能再操作组件
+						 * 通常情况下，不需要示放组件，new DtPicker(options) 后，可以一直使用。
+						 * 当前示例，因为内容较多，如不进行资原释放，在某些设备上会较慢。
+						 * 所以每次用完便立即调用 dispose 进行释放，下次用时再创建新实例。
+						 */
+						_self.picker.dispose();
+						_self.picker = null;
+					});
+				}
+				
+			}, false);
+			  
+			var btn = document.querySelector('.addItemBtn');
+			btn.addEventListener('tap', function() {
+			    var notetime = t.value;
+			    var noteinfo = i.value.replace(/\n/g, '<br/>');
+			    
+			    var d = new Date(notetime);
+//			    console.log(d.toString())
+			    
+			    var ntime = Date.parse(d)/1000;
+//			    console.log(ntime)
+			    
+			    var c = new Date(notetime);
+			    c.setHours(0, 0, 0, 0);
+//			    console.log(c.toString())
+			    
+			    var ctime = Date.parse(c)/1000;
+//			    console.log(ctime)
+			     
+			    if(!notetime){
+			        alert('请选择时间！');        
+			    } else if(!noteinfo){
+			        alert('请输入内容！');        
+			    } else{
+			    	//获取父页面
+					var index = plus.webview.currentWebview().opener();
+//					console.log(index);
+					
+		            //websql
+//					CreateDataBase('NoteDB');
+//		            ExeSql('INSERT INTO NoteList (createtime, notetime, noteinfo) VALUES ("' + ctime + '", "' + ntime + '", "' + noteinfo + '")');
+
+					mui.fire(index,'refresh',{  
+		                notetime:notetime,
+					    noteinfo:noteinfo,
+					    ctime:ctime,
+					    ntime:ntime
+					});  
+					//清空数据
+					t.value = '';
+					i.value = '';
+					//返回
+					mui.back();
+			    }
+			}, false);
+		};
+			
+		mui.plusReady(h);
+	</script>
+</html>

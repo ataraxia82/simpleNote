@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title></title>
+    <script src="js/mui.min.js"></script>
+    <link href="css/mui.min.css" rel="stylesheet"/>
+    <link href="css/MCalendar.css" rel="stylesheet"/>
+    <link href="css/iconfont.css" rel="stylesheet"/>
+	<style type="text/css">
+    	.mui-bar-nav{
+    		background-color: #000;
+    	}
+    	.mui-bar .mui-title {
+    		color:#fff
+    	}
+    </style>
+    <script type="text/javascript" charset="utf-8">
+      	mui.init({
+			gestureConfig:{
+			tap: true, //默认为true
+			doubletap: true, //默认为false
+			longtap: true, //默认为false
+			swipe: true, //默认为true
+			drag: true, //默认为true
+			hold:false,//默认为false，不监听
+			release:false//默认为false，不监听
+		}
+		});
+    </script>
+</head>
+<body>
+	<header class="mui-bar mui-bar-nav">
+	    <h1 class="mui-title">极简记事</h1>
+	</header>
+	<div class="mui-content">
+		
+		<div id="container">
+		</div>
+		  <div class="mui-scroll">
+			<!--数据列表-->
+			  <ul class="mui-table-view">		    
+			</ul>
+		  </div>
+		  <div>
+		  	<span class="mui-icon iconfont icon-add mc-bottom"></span>
+		  </div>
+	</div>
+</body>
+	<script src="js/MCalendar.js"></script>
+	<script src="js/websql.js"></script>
+	<script>
+		var calender = function(){
+	    	var page = mui.preload({
+			    url:'add.html',
+			    id:'add.html',
+			    styles:{},//窗口参数
+			    extras:{}//自定义扩展参数
+			});
+
+			//websql
+			CreateDataBase('NoteDB');
+			CreateTable('NoteList');
+			
+			//初始化日历
+			var MC = mui("#container").MCalendar(mui.DateUtil.getToday());
+			
+			var add = document.querySelector('.mc-bottom');
+			
+			//添加事件
+			add.addEventListener("tap",function(){
+				mui.openWindow({
+					url:'add.html',
+				    id:'add.html'
+				    });
+	       });
+	       
+			window.addEventListener('refresh',function(event){
+			  //通过event.detail可获得传递过来的参数内容
+			  var notetime = event.detail.notetime;
+			  var noteinfo = event.detail.noteinfo;
+			  var ctime = event.detail.ctime;
+			  var ntime = event.detail.ntime;
+//			  console.log(notetime + ' ' + noteinfo + ' ' + ctime + ' ' + ntime);
+			  
+			  //插入数据库
+			  ExeSql('INSERT INTO NoteList (createtime, notetime, noteinfo) VALUES ("' + ctime + '", "' + ntime + '", "' + noteinfo + '")');
+			  
+			  //刷新指定位置的页面
+			  var d = new Date(ntime * 1000);
+			  MC.changeDate(d);
+			});
+		};
+		
+		mui.plusReady(calender)
+	</script>
+</html>

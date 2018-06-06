@@ -1,0 +1,15 @@
+
+@font-face {font-family: "iconfont";
+  src: url('../fonts/iconfont.ttf?t=1528250189956') format('truetype');
+}
+
+.iconfont {
+  font-family:"iconfont" !important;
+  font-size:64px;
+  font-style:normal;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke-width: 0.2px;
+}
+
+.icon-add:before { content: "\e621"; }
+
