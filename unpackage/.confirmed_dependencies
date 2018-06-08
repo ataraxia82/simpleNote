@@ -1,8 +1,9 @@
 {
-  "index.html": {
-    "refer": [
-      "add.html",
-      "addImg.html"
-    ]
-  }
+	"index.html": {
+		"refer": [
+			"add.html",
+			"addImg.html",
+			"audio.html"
+		]
+	}
 }

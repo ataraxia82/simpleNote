@@ -6,7 +6,7 @@ function CreateDataBase(name, version){
 }
 
 function CreateTable(name){
-	ExeSql('CREATE TABLE IF NOT EXISTS '+name+' (id integer primary key autoincrement, createtime text, notetime text, noteinfo text)')
+	ExeSql('CREATE TABLE IF NOT EXISTS '+name+' (id integer primary key autoincrement, notedate text, notetime text, noteinfo text)')
 }
 
 function ExeSql(sql, arg, callback){

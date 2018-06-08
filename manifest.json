@@ -124,7 +124,8 @@
 				"resources": [],
 				"refer": [
 					"add.html",
-					"addImg.html"
+					"addImg.html",
+					"audio.html"
 				],
 				"priority": 0
 			},

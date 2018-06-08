@@ -125,10 +125,11 @@
 					}
 					else{
 						$.removeClass(this, "mc-table-cell-today");
+						$.removeClass(this, "mc-table-cell-hasdata");
 						
 						var c = this;
 						//判断有无数据 有数据则修改颜色
-						ExeSql('select * from NoteList where createtime = ' + Date.parse(d)/1000, [], function(tx, results){
+						ExeSql('select * from NoteList where notedate = ' + Date.parse(d)/1000, [], function(tx, results){
 							var len = results.rows.length;
 							if(len > 0) {
 								$.addClass(c, "mc-table-cell-hasdata")
@@ -159,29 +160,53 @@
 				
 				$("#mc-date-label")[0].innerHTML = (date_selected.getMonth()+1) +'月' +date_selected.getFullYear() +'年';
     		
-    		//console.log(Date.parse(date_selected)/1000);  
-				
 				//根据date_selected获取日志 显示
 				var ul = document.querySelector('.mui-table-view');
 				ul.innerHTML = "";
 				
-				ExeSql('select * from NoteList where createtime = ' + Date.parse(date_selected)/1000 + ' order by notetime desc', [], function(tx, results){
+				//判断是否有数据 有数据则显示蓝色
+				ExeSql('select * from NoteList where notedate = ' + Date.parse(date_selected)/1000 + ' order by notetime desc', [], function(tx, results){
 					var len = results.rows.length, i;
-					//console.log('results len is '+len)
 					if(len > 0 && date.getTime() != $.DateUtil.getToday().getTime()) {
 						$.addClass(cell_selected, "mc-table-cell-hasdata")
 					}
 					
 					for (i = 0; i < len; i++){
 						var item = results.rows.item(i);
-						var ctime = $.DateUtil.timestampToDate(item.createtime);
+						var ndate = $.DateUtil.timestampToDate(item.notedate);
 						var ntime = $.DateUtil.timestampToTime(item.notetime);
 						var li = document.createElement('li');
 						li.className = 'mui-table-view-cell mui-media';
 						li.innerHTML = '<span hidden="true">' + item.id + '</span><span class="mui-badge mui-badge-success mui-badge-inverted mui-pull-right">' + ntime + '</span> \
-				            <div class="mui-media-body"> ' + item.noteinfo + '<p class="mui-ellipsis">'+ ctime + '</p></div>';
+				            <div class="mui-media-body" style="width:75%">' + item.noteinfo + '<p class="mui-ellipsis">'+ ndate + '</p></div>';
 
-						//添加事件
+						//点击进入详情
+						li.addEventListener("tap",function(){
+							var l = this;
+							var id = l.childNodes[0].innerText;
+							
+							ExeSql('select * from NoteList where id = ' + id, [], function(tx, r){
+								var len = r.rows.length;
+								if(len == 1) {
+									var item = r.rows.item(0);
+									var id = item.id;
+									var notedate = item.notedate;
+									var notetime = item.notetime;
+									var noteinfo = item.noteinfo;
+									mui.openWindow({
+										url:'add.html',
+									    id:'add.html',
+									        extras: {
+									        	target: id,
+										        notedate: notedate,
+										        notetime: notetime,
+										        noteinfo: noteinfo
+										    }
+									    });
+								}
+							})
+		        })
+						//长按删除
 						li.addEventListener("longtap",function(){
 							var l = this;
 							var id = l.childNodes[0].innerText;
@@ -191,7 +216,8 @@
 												ExeSql('DELETE from NoteList where id = ' +id, [], function(tx, results){
 													l.remove();
 													
-													ExeSql('select * from NoteList where createtime = ' + Date.parse(date_selected)/1000 + ' order by notetime desc', [], function(tx, r){
+													//删除后判断是否有数据 如果没有则删除css
+													ExeSql('select * from NoteList where notedate = ' + Date.parse(date_selected)/1000 + ' order by notetime desc', [], function(tx, r){
 														var len = r.rows.length, i;
 														if(len == 0 && date.getTime() != $.DateUtil.getToday().getTime()) {
 															$.removeClass(cell_selected, "mc-table-cell-hasdata")
@@ -204,6 +230,27 @@
 						ul.insertBefore(li, ul.firstChild);
 					}
 				})
+		}
+		
+		var checkHasData = function(date){
+			  date && date.setHours(0,0,0,0)
+				if(cell_selected){
+					$.removeClass(cell_selected,"mc-cell-selected");
+					if(date_selected.getFullYear() == date.getFullYear()
+					   && date_selected.getMonth() == date.getMonth()){
+					   	  var index = 1*cell_selected.getAttribute("mc-cell-index") + $.DateUtil.getDateDiff(date_selected, date);
+					   	  //获取date对应的cell index
+					   	  var c = $(".mc-table-cell")[index];
+					   	  
+								//判断是否有数据 如果没有则删除css
+								ExeSql('select * from NoteList where notedate = ' + Date.parse(date)/1000 + ' order by notetime desc', [], function(tx, r){
+									var len = r.rows.length, i;
+									if(len == 0 && date.getTime() != $.DateUtil.getToday().getTime()) {
+										$.removeClass(c, "mc-table-cell-hasdata")
+									}
+								})
+					   }
+				}
 		}
 		
 		function getFirstDateInMonth(date){
@@ -251,6 +298,7 @@
 			},
 			
 			changeDate:changeDate,
+			checkHasData:checkHasData,
 		}
 	}($));
 	
@@ -288,6 +336,10 @@
 			
 			changeDate:function(date){
 				MonthView.changeDate(date)
+			},
+			
+			checkHasData:function(date){
+				MonthView.checkHasData(date)
 			},
 			
 		};

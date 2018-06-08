@@ -61,6 +61,28 @@
 			var t = document.querySelector('#notetime');
 			var i = document.querySelector('#noteinfo');
 			
+			//如果是点击进入详情 则初始化数据
+			var self = plus.webview.currentWebview();
+		   	if(self.target) {
+		   		var ti = document.querySelector('.mui-title');
+		   		ti.innerText = '详情';
+		   		
+		   		var b = document.querySelector('.addItemBtn');
+		   		b.innerText = '修改';
+		   		
+				var date = new Date(self.notetime * 1000);//时间戳为10位需*1000，时间戳为13位的话不需乘1000
+		        Y = date.getFullYear() + '-';
+		        M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+		        D = date.getDate() < 10 ? '0'+(date.getDate())  + ' ' : date.getDate() + ' ';
+		        h = date.getHours() < 10 ? '0'+(date.getHours() + ':') : date.getHours() + ':';
+		        m = date.getMinutes() < 10 ? '0'+(date.getMinutes()) : date.getMinutes();
+		        var ntime = Y+M+D+h+m;
+		        
+		        //填入数据
+		   		t.value = ntime;
+		   		i.value = self.noteinfo;
+		   	}
+			
 			var dt = document.querySelector('.mui-input-clear');
 			dt.addEventListener('tap', function() {
 				var _self = this;
@@ -123,21 +145,14 @@
 			  
 			var btn = document.querySelector('.addItemBtn');
 			btn.addEventListener('tap', function() {
+				//如果是修改
 			    var notetime = t.value;
 			    var noteinfo = i.value.replace(/\n/g, '<br/>');
 			    
 			    var d = new Date(notetime);
-//			    console.log(d.toString())
-			    
-			    var ntime = Date.parse(d)/1000;
-//			    console.log(ntime)
-			    
-			    var c = new Date(notetime);
-			    c.setHours(0, 0, 0, 0);
-//			    console.log(c.toString())
-			    
-			    var ctime = Date.parse(c)/1000;
-//			    console.log(ctime)
+			    var ntime = Date.parse(d)/1000; 
+			    d.setHours(0, 0, 0, 0);
+			    var ndate = Date.parse(d)/1000;
 			     
 			    if(!notetime){
 			        mui.toast('请选择时间！');        
@@ -146,17 +161,14 @@
 			    } else{
 			    	//获取父页面
 					var index = plus.webview.currentWebview().opener();
-//					console.log(index);
 					
-		            //websql
-//					CreateDataBase('NoteDB');
-//		            ExeSql('INSERT INTO NoteList (createtime, notetime, noteinfo) VALUES ("' + ctime + '", "' + ntime + '", "' + noteinfo + '")');
-
 					mui.fire(index,'refresh',{  
+						id: self.target,
 		                notetime:notetime,
 					    noteinfo:noteinfo,
-					    ctime:ctime,
-					    ntime:ntime
+					    ndate:ndate,
+					    ntime:ntime,
+					    oldtime:self.notetime
 					});  
 					//清空数据
 					t.value = '';
