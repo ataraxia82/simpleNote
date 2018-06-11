@@ -113,7 +113,7 @@
 				},
 				"android": {
 					"mdpi": "", /*普通屏启动图片，分辨率：240x282*/
-					"ldpi": "","hdpi":"C:/Users/Administrator/Desktop/startL.png","xhdpi":"C:/Users/Administrator/Desktop/startH.png","xxhdpi":"C:/Users/Administrator/Desktop/startXH.png"
+					"ldpi": "","hdpi":"C:/Users/Administrator/Desktop/simplenote.res/startL.png","xhdpi":"C:/Users/Administrator/Desktop/simplenote.res/startH.png","xxhdpi":"C:/Users/Administrator/Desktop/simplenote.res/startXH.png"
 				}
 			}
 		}
@@ -125,7 +125,8 @@
 				"refer": [
 					"add.html",
 					"addImg.html",
-					"audio.html"
+					"audio.html",
+					"sidemenu.html"
 				],
 				"priority": 0
 			},

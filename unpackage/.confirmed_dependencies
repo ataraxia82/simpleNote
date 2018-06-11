@@ -1,9 +1,10 @@
 {
-	"index.html": {
-		"refer": [
-			"add.html",
-			"addImg.html",
-			"audio.html"
-		]
-	}
+  "index.html": {
+    "refer": [
+      "add.html",
+      "addImg.html",
+      "audio.html",
+      "sidemenu.html"
+    ]
+  }
 }

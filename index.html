@@ -32,10 +32,19 @@
 </head>
 <body>
 	<header class="mui-bar mui-bar-nav">
+		<a class="mui-action-menu mui-icon mui-icon-bars mui-pull-left"></a>
 	    <h1 class="mui-title">极简记事</h1>
 	</header>
 	<div class="mui-content">
-		
+        <!--<div class="mui-content-padded">
+            <p>这是webview模式右滑导航示例，主页面和菜单在不同的webview中，
+                优点是支持菜单内容在多页面的复用，缺点是不支持拖动手势（跟手）；
+                当前页面为主界面，你可以在主界面放置任何内容；
+            </p>
+            <p style="padding: 5px 20px;margin-bottom: 5px;">
+                <button id="show-btn" type="button" class="mui-btn mui-btn-primary mui-btn-block" style="padding: 10px;">显示侧滑菜单</button>
+            </p>
+        </div>-->
 		<div id="container">
 		</div>
 		  <div class="mui-scroll">
@@ -50,59 +59,64 @@
 		  </div>
 	</div>
 </body>
-	<script src="js/MCalendar.js"></script>
-	<script src="js/websql.js"></script>
-	<script>
-		var calender = function(){
-//	    	var page = mui.preload({
-//			    url:'add.html',
-//			    id:'add.html',
-//			    styles:{},//窗口参数
-//			    extras:{}//自定义扩展参数
-//			});
+<script src="js/MCalendar.js"></script>
+<script src="js/websql.js"></script>
+<script>
+    //生成2个对象分别控制主窗口和菜单窗口；
+    var menu = null,main = null;
+    var showMenu = false;
+    var isInTransition = false;
+	
+	mui.plusReady(function(){
+//  	var page = mui.preload({
+//		    url:'add.html',
+//		    id:'add.html',
+//		    styles:{},//窗口参数
+//		    extras:{}//自定义扩展参数
+//		});
 
-			//websql
-			CreateDataBase('NoteDB');
-			CreateTable('NoteList');
-			
-			//初始化日历
-			var MC = mui("#container").MCalendar(mui.DateUtil.getToday());
-			
-			var add = document.querySelector('#add');
-			
-			//添加事件
-			add.addEventListener("tap",function(){
-				mui.openWindow({
-					url:'add.html',
-				    id:'add.html'
-				    });
-	       });
-	       
-			window.addEventListener('refresh',function(event){
-			  //通过event.detail可获得传递过来的参数内容
-			  var id = event.detail.id;
-			  var notetime = event.detail.notetime;
-			  var noteinfo = event.detail.noteinfo;
-			  var ndate = event.detail.ndate; //时间戳
-			  var ntime = event.detail.ntime; //时间戳
-			  var oldtime = event.detail.oldtime; //时间戳
-			  
-			  if(!id) {
+		//websql
+		CreateDataBase('NoteDB');
+		CreateTable('NoteList');
+		
+		//初始化日历
+		var MC = mui("#container").MCalendar(mui.DateUtil.getToday());
+		
+		var add = document.querySelector('#add');
+		
+		//添加事件
+		add.addEventListener("tap",function(){
+			mui.openWindow({
+				url:'add.html',
+			    id:'add.html'
+			    });
+		});
+       
+		window.addEventListener('refresh',function(event){
+			//通过event.detail可获得传递过来的参数内容
+			var id = event.detail.id;
+			var notetime = event.detail.notetime;
+			var noteinfo = event.detail.noteinfo;
+			var ndate = event.detail.ndate; //时间戳
+			var ntime = event.detail.ntime; //时间戳
+			var oldtime = event.detail.oldtime; //时间戳
+		  
+			if(!id) {
 				//插入数据库
 				ExeSql('INSERT INTO NoteList (notedate, notetime, noteinfo) VALUES ("' + ndate + '", "' + ntime + '", "' + noteinfo + '")');
-			  } else {
-			  	//更新数据库
-			  	ExeSql('UPDATE NoteList set notedate = "' + ndate + '", notetime = "' + ntime + '", noteinfo = "' + noteinfo + '" where id = ' + id);
-			  }
-			  //刷新指定位置的页面
-			  if(oldtime) {
-			  	var o = new Date(oldtime * 1000);
-			  	MC.checkHasData(o);
-			  }
-			  var d = new Date(ntime * 1000);
-			  MC.changeDate(d);
-			});
-			
+			} else {
+				//更新数据库
+				ExeSql('UPDATE NoteList set notedate = "' + ndate + '", notetime = "' + ntime + '", noteinfo = "' + noteinfo + '" where id = ' + id);
+			}
+			//刷新指定位置的页面
+			if(oldtime) {
+				var o = new Date(oldtime * 1000);
+				MC.checkHasData(o);
+			}
+			var d = new Date(ntime * 1000);
+			MC.changeDate(d);
+		});
+		
 //			var addImg = document.querySelector('#addImg');
 //			
 //			//添加事件
@@ -113,17 +127,92 @@
 //				    });
 //	       });
 
-			var audio = document.querySelector('#audio');
-			
-			//添加事件
-			audio.addEventListener("tap",function(){
-				mui.openWindow({
-					url:'audio.html',
-				    id:'audio.html'
-				    });
-	       });
-		};
+		var audio = document.querySelector('#audio');
 		
-		mui.plusReady(calender)
-	</script>
+		//添加事件
+		audio.addEventListener("tap",function(){
+			mui.openWindow({
+				url:'audio.html',
+			    id:'audio.html'
+			    });
+		});
+       
+        main = plus.webview.currentWebview();
+        main.addEventListener('maskClick', closeMenu);
+        //处理侧滑导航，为了避免和子页面初始化等竞争资源，延迟加载侧滑页面；
+        setTimeout(function() {
+            menu = mui.preload({
+                id: 'sidemenu.html',
+                url: 'sidemenu.html',
+                styles: {
+                    left: 0,
+                    width: '70%',
+                    zindex: -1
+                }
+            });
+        	}, 200);
+		}
+	);	
+		
+    //打开侧滑窗口；
+    function openMenu() {
+        if (isInTransition) {
+            return;
+        }
+        if (!showMenu) {
+            //侧滑菜单处于隐藏状态，则立即显示出来；
+            isInTransition = true;
+            menu.setStyle({
+                mask: 'rgba(0,0,0,0)'
+            }); //menu设置透明遮罩防止点击
+            menu.show('none', 0, function() {
+                //主窗体开始侧滑并显示遮罩
+                main.setStyle({
+                    mask: 'rgba(0,0,0,0.4)',
+                    left: '70%',
+                    transition: {
+                        duration: 200
+                    }
+                });
+                mui.later(function() {
+                    isInTransition = false;
+                    menu.setStyle({
+                        mask: "none"
+                    }); //移除menu的mask
+                }, 200);
+                showMenu = true;
+            });
+        }
+    };
+    //关闭侧滑窗口；
+    function closeMenu() {
+        if (isInTransition) {
+            return;
+        }
+        if (showMenu) {
+            //关闭遮罩；
+            //主窗体开始侧滑；
+            isInTransition = true;
+            main.setStyle({
+                mask: 'none',
+                left: '0',
+                transition: {
+                    duration: 200
+                }
+            });
+            showMenu = false;
+            //等动画结束后，隐藏菜单webview，节省资源；
+            mui.later(function() {
+                isInTransition = false;
+                menu.hide();
+            }, 200);
+        }
+    };
+    //点击头部菜单小图标，打开侧滑菜单；
+    document.querySelector('.mui-icon-bars').addEventListener('tap', openMenu);
+    //点击自定义按钮，打开侧滑菜单；
+    //document.querySelector('#show-btn').addEventListener('tap', openMenu);
+    //menu页面点击后关闭菜单；
+    window.addEventListener("menu:tap", closeMenu);
+</script>
 </html>
